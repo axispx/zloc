@@ -4,45 +4,63 @@ const syntax = @import("syntax.zig");
 // Supported languages
 pub const Language = enum {
     assembly,
+    astro,
     awk,
+    batch,
     c,
     c_cpp_header,
     clojure,
+    crystal,
     csharp,
     cpp,
     csv,
     css,
+    d,
     dart,
     dockerfile,
+    elixir,
+    erlang,
+    fsharp,
     go,
+    graphql,
+    groovy,
     hcl,
+    haskell,
     html,
     java,
     javascript,
     jinja,
     json,
+    julia,
     kotlin,
     lex,
     lua,
     makefile,
     markdown,
+    nim,
     objective_c,
+    ocaml,
     perl,
     php,
+    powershell,
     python,
     r,
     ruby,
     rust,
     sass,
+    scala,
     sed,
     shell,
     sql,
     svg,
+    svelte,
     swift,
     tex,
     text,
     toml,
     typescript,
+    verilog,
+    vhdl,
     vim_script,
     xml,
     yacc,
@@ -52,52 +70,68 @@ pub const Language = enum {
 
 const LanguageSpec = struct {
     language: Language,
-    extensions: []const []const u8,
-    filenames: []const []const u8 = &.{},
     syntax: syntax.SyntaxSpec,
 };
 
 pub const supported_languages = [_]Language{
     .assembly,
+    .astro,
     .awk,
+    .batch,
     .c,
     .c_cpp_header,
     .clojure,
+    .crystal,
     .csharp,
     .cpp,
     .csv,
     .css,
+    .d,
     .dart,
     .dockerfile,
+    .elixir,
+    .erlang,
+    .fsharp,
     .go,
+    .graphql,
+    .groovy,
     .hcl,
+    .haskell,
     .html,
     .java,
     .javascript,
     .jinja,
     .json,
+    .julia,
     .kotlin,
     .lex,
     .lua,
     .makefile,
     .markdown,
+    .nim,
     .objective_c,
+    .ocaml,
     .perl,
     .php,
+    .powershell,
     .python,
     .r,
     .ruby,
     .rust,
     .sass,
+    .scala,
     .sed,
     .shell,
     .sql,
     .svg,
+    .svelte,
     .swift,
     .tex,
     .text,
     .toml,
     .typescript,
+    .verilog,
+    .vhdl,
     .vim_script,
     .xml,
     .yacc,
@@ -118,10 +152,23 @@ pub const assembly_syntax = syntax.SyntaxSpec{
     },
 };
 
+pub const astro_syntax = html_syntax;
+
 pub const awk_syntax = syntax.SyntaxSpec{
     .line_comments = &.{.{ .marker = "#" }},
     .quoted = &.{
         .{ .start = "\"", .end = "\"", .escape = '\\' },
+    },
+};
+
+pub const batch_syntax = syntax.SyntaxSpec{
+    .line_comments = &.{
+        .{ .marker = "::" },
+        .{ .marker = "REM " },
+        .{ .marker = "rem " },
+    },
+    .quoted = &.{
+        .{ .start = "\"", .end = "\"" },
     },
 };
 
@@ -143,8 +190,22 @@ pub const clojure_syntax = syntax.SyntaxSpec{
     },
 };
 
+pub const crystal_syntax = ruby_syntax;
 pub const csharp_syntax = c_syntax;
 pub const cpp_syntax = c_syntax;
+
+pub const d_syntax = syntax.SyntaxSpec{
+    .line_comments = &.{.{ .marker = "//" }},
+    .block_comments = &.{
+        .{ .start = "/*", .end = "*/" },
+        .{ .start = "/+", .end = "+/", .nested = true },
+    },
+    .quoted = &.{
+        .{ .start = "\"", .end = "\"", .escape = '\\' },
+        .{ .start = "'", .end = "'", .escape = '\\' },
+        .{ .start = "`", .end = "`", .multiline = true },
+    },
+};
 
 pub const csv_syntax = syntax.SyntaxSpec{
     .quoted = &.{
@@ -179,6 +240,33 @@ pub const dockerfile_syntax = syntax.SyntaxSpec{
     },
 };
 
+pub const elixir_syntax = syntax.SyntaxSpec{
+    .line_comments = &.{.{ .marker = "#" }},
+    .quoted = &.{
+        .{ .start = "\"\"\"", .end = "\"\"\"", .escape = '\\', .multiline = true },
+        .{ .start = "'''", .end = "'''", .escape = '\\', .multiline = true },
+        .{ .start = "\"", .end = "\"", .escape = '\\' },
+        .{ .start = "'", .end = "'", .escape = '\\' },
+    },
+};
+
+pub const erlang_syntax = syntax.SyntaxSpec{
+    .line_comments = &.{.{ .marker = "%" }},
+    .quoted = &.{
+        .{ .start = "\"", .end = "\"", .escape = '\\' },
+        .{ .start = "'", .end = "'", .escape = '\\' },
+    },
+};
+
+pub const fsharp_syntax = syntax.SyntaxSpec{
+    .line_comments = &.{.{ .marker = "//" }},
+    .block_comments = &.{.{ .start = "(*", .end = "*)" }},
+    .quoted = &.{
+        .{ .start = "\"\"\"", .end = "\"\"\"", .multiline = true },
+        .{ .start = "\"", .end = "\"", .escape = '\\' },
+    },
+};
+
 pub const go_syntax = syntax.SyntaxSpec{
     .line_comments = &.{.{ .marker = "//" }},
     .block_comments = &.{.{ .start = "/*", .end = "*/" }},
@@ -189,11 +277,39 @@ pub const go_syntax = syntax.SyntaxSpec{
     },
 };
 
+pub const graphql_syntax = syntax.SyntaxSpec{
+    .line_comments = &.{.{ .marker = "#" }},
+    .quoted = &.{
+        .{ .start = "\"\"\"", .end = "\"\"\"", .multiline = true },
+        .{ .start = "\"", .end = "\"", .escape = '\\' },
+    },
+};
+
+pub const groovy_syntax = syntax.SyntaxSpec{
+    .line_comments = &.{.{ .marker = "//" }},
+    .block_comments = &.{.{ .start = "/*", .end = "*/" }},
+    .quoted = &.{
+        .{ .start = "\"\"\"", .end = "\"\"\"", .escape = '\\', .multiline = true },
+        .{ .start = "'''", .end = "'''", .escape = '\\', .multiline = true },
+        .{ .start = "\"", .end = "\"", .escape = '\\' },
+        .{ .start = "'", .end = "'", .escape = '\\' },
+    },
+};
+
 pub const hcl_syntax = syntax.SyntaxSpec{
     .line_comments = &.{ .{ .marker = "#" }, .{ .marker = "//" } },
     .block_comments = &.{.{ .start = "/*", .end = "*/" }},
     .quoted = &.{
         .{ .start = "\"", .end = "\"", .escape = '\\' },
+    },
+};
+
+pub const haskell_syntax = syntax.SyntaxSpec{
+    .line_comments = &.{.{ .marker = "--" }},
+    .block_comments = &.{.{ .start = "{-", .end = "-}", .nested = true }},
+    .quoted = &.{
+        .{ .start = "\"", .end = "\"", .escape = '\\' },
+        .{ .start = "'", .end = "'", .escape = '\\' },
     },
 };
 
@@ -231,6 +347,16 @@ pub const json_syntax = syntax.SyntaxSpec{
     },
 };
 
+pub const julia_syntax = syntax.SyntaxSpec{
+    .line_comments = &.{.{ .marker = "#" }},
+    .block_comments = &.{.{ .start = "#=", .end = "=#" }},
+    .quoted = &.{
+        .{ .start = "\"\"\"", .end = "\"\"\"", .escape = '\\', .multiline = true },
+        .{ .start = "\"", .end = "\"", .escape = '\\' },
+        .{ .start = "'", .end = "'", .escape = '\\' },
+    },
+};
+
 pub const kotlin_syntax = syntax.SyntaxSpec{
     .line_comments = &.{.{ .marker = "//" }},
     .block_comments = &.{.{ .start = "/*", .end = "*/" }},
@@ -263,7 +389,25 @@ pub const makefile_syntax = syntax.SyntaxSpec{
 
 pub const markdown_syntax = html_syntax;
 
+pub const nim_syntax = syntax.SyntaxSpec{
+    .line_comments = &.{.{ .marker = "#" }},
+    .block_comments = &.{.{ .start = "#[", .end = "]#" }},
+    .quoted = &.{
+        .{ .start = "\"\"\"", .end = "\"\"\"", .multiline = true },
+        .{ .start = "\"", .end = "\"", .escape = '\\' },
+        .{ .start = "'", .end = "'", .escape = '\\' },
+    },
+};
+
 pub const objective_c_syntax = c_syntax;
+
+pub const ocaml_syntax = syntax.SyntaxSpec{
+    .block_comments = &.{.{ .start = "(*", .end = "*)", .nested = true }},
+    .quoted = &.{
+        .{ .start = "\"", .end = "\"", .escape = '\\' },
+        .{ .start = "'", .end = "'", .escape = '\\' },
+    },
+};
 
 pub const perl_syntax = syntax.SyntaxSpec{
     .line_comments = &.{.{ .marker = "#" }},
@@ -282,6 +426,15 @@ pub const php_syntax = syntax.SyntaxSpec{
         .{ .start = "\"", .end = "\"", .escape = '\\' },
         .{ .start = "'", .end = "'", .escape = '\\' },
         .{ .start = "`", .end = "`", .escape = '\\' },
+    },
+};
+
+pub const powershell_syntax = syntax.SyntaxSpec{
+    .line_comments = &.{.{ .marker = "#" }},
+    .block_comments = &.{.{ .start = "<#", .end = "#>" }},
+    .quoted = &.{
+        .{ .start = "\"", .end = "\"", .escape = '`' },
+        .{ .start = "'", .end = "'" },
     },
 };
 
@@ -331,6 +484,16 @@ pub const sass_syntax = syntax.SyntaxSpec{
     },
 };
 
+pub const scala_syntax = syntax.SyntaxSpec{
+    .line_comments = &.{.{ .marker = "//" }},
+    .block_comments = &.{.{ .start = "/*", .end = "*/" }},
+    .quoted = &.{
+        .{ .start = "\"\"\"", .end = "\"\"\"", .multiline = true },
+        .{ .start = "\"", .end = "\"", .escape = '\\' },
+        .{ .start = "'", .end = "'", .escape = '\\' },
+    },
+};
+
 pub const sed_syntax = syntax.SyntaxSpec{
     .line_comments = &.{.{ .marker = "#" }},
 };
@@ -354,6 +517,8 @@ pub const sql_syntax = syntax.SyntaxSpec{
 };
 
 pub const svg_syntax = html_syntax;
+
+pub const svelte_syntax = html_syntax;
 
 pub const swift_syntax = syntax.SyntaxSpec{
     .line_comments = &.{.{ .marker = "//" }},
@@ -381,6 +546,21 @@ pub const toml_syntax = syntax.SyntaxSpec{
 };
 
 pub const typescript_syntax = javascript_syntax;
+
+pub const verilog_syntax = syntax.SyntaxSpec{
+    .line_comments = &.{.{ .marker = "//" }},
+    .block_comments = &.{.{ .start = "/*", .end = "*/" }},
+    .quoted = &.{
+        .{ .start = "\"", .end = "\"", .escape = '\\' },
+    },
+};
+
+pub const vhdl_syntax = syntax.SyntaxSpec{
+    .line_comments = &.{.{ .marker = "--" }},
+    .quoted = &.{
+        .{ .start = "\"", .end = "\"" },
+    },
+};
 
 pub const vim_script_syntax = syntax.SyntaxSpec{
     .line_comments = &.{.{ .marker = "\"" }},
@@ -415,231 +595,254 @@ pub const zig_syntax = syntax.SyntaxSpec{
 pub const specs = [_]LanguageSpec{
     .{
         .language = .assembly,
-        .extensions = &.{ ".S", ".asm", ".s" },
         .syntax = assembly_syntax,
     },
     .{
+        .language = .astro,
+        .syntax = astro_syntax,
+    },
+    .{
         .language = .awk,
-        .extensions = &.{".awk"},
         .syntax = awk_syntax,
     },
     .{
+        .language = .batch,
+        .syntax = batch_syntax,
+    },
+    .{
         .language = .c,
-        .extensions = &.{".c"},
         .syntax = c_syntax,
     },
     .{
         .language = .c_cpp_header,
-        .extensions = &.{ ".h", ".hh", ".hpp", ".hxx" },
         .syntax = c_cpp_header_syntax,
     },
     .{
         .language = .clojure,
-        .extensions = &.{ ".clj", ".cljc", ".cljs", ".edn" },
         .syntax = clojure_syntax,
     },
     .{
+        .language = .crystal,
+        .syntax = crystal_syntax,
+    },
+    .{
         .language = .csharp,
-        .extensions = &.{".cs"},
         .syntax = csharp_syntax,
     },
     .{
         .language = .cpp,
-        .extensions = &.{ ".cc", ".cpp", ".cxx" },
         .syntax = cpp_syntax,
     },
     .{
         .language = .csv,
-        .extensions = &.{".csv"},
         .syntax = csv_syntax,
     },
     .{
         .language = .css,
-        .extensions = &.{".css"},
         .syntax = css_syntax,
     },
     .{
+        .language = .d,
+        .syntax = d_syntax,
+    },
+    .{
         .language = .dart,
-        .extensions = &.{".dart"},
         .syntax = dart_syntax,
     },
     .{
         .language = .dockerfile,
-        .extensions = &.{".dockerfile"},
-        .filenames = &.{ "Dockerfile", "dockerfile" },
         .syntax = dockerfile_syntax,
     },
     .{
+        .language = .elixir,
+        .syntax = elixir_syntax,
+    },
+    .{
+        .language = .erlang,
+        .syntax = erlang_syntax,
+    },
+    .{
+        .language = .fsharp,
+        .syntax = fsharp_syntax,
+    },
+    .{
         .language = .go,
-        .extensions = &.{".go"},
         .syntax = go_syntax,
     },
     .{
+        .language = .graphql,
+        .syntax = graphql_syntax,
+    },
+    .{
+        .language = .groovy,
+        .syntax = groovy_syntax,
+    },
+    .{
         .language = .hcl,
-        .extensions = &.{ ".hcl", ".tf", ".tfvars" },
         .syntax = hcl_syntax,
     },
     .{
+        .language = .haskell,
+        .syntax = haskell_syntax,
+    },
+    .{
         .language = .html,
-        .extensions = &.{ ".htm", ".html" },
         .syntax = html_syntax,
     },
     .{
         .language = .java,
-        .extensions = &.{".java"},
         .syntax = java_syntax,
     },
     .{
         .language = .javascript,
-        .extensions = &.{ ".cjs", ".js", ".jsx", ".mjs" },
         .syntax = javascript_syntax,
     },
     .{
         .language = .jinja,
-        .extensions = &.{ ".j2", ".jinja", ".jinja2" },
         .syntax = jinja_syntax,
     },
     .{
         .language = .json,
-        .extensions = &.{".json"},
         .syntax = json_syntax,
     },
     .{
+        .language = .julia,
+        .syntax = julia_syntax,
+    },
+    .{
         .language = .kotlin,
-        .extensions = &.{ ".kt", ".kts" },
         .syntax = kotlin_syntax,
     },
     .{
         .language = .lex,
-        .extensions = &.{ ".l", ".ll" },
         .syntax = lex_syntax,
     },
     .{
         .language = .lua,
-        .extensions = &.{".lua"},
         .syntax = lua_syntax,
     },
     .{
         .language = .makefile,
-        .extensions = &.{".mk"},
-        .filenames = &.{ "GNUmakefile", "Makefile", "makefile" },
         .syntax = makefile_syntax,
     },
     .{
         .language = .markdown,
-        .extensions = &.{ ".markdown", ".md", ".mdown", ".mkd" },
         .syntax = markdown_syntax,
     },
     .{
+        .language = .nim,
+        .syntax = nim_syntax,
+    },
+    .{
         .language = .objective_c,
-        .extensions = &.{ ".m", ".mm" },
         .syntax = objective_c_syntax,
     },
     .{
+        .language = .ocaml,
+        .syntax = ocaml_syntax,
+    },
+    .{
         .language = .perl,
-        .extensions = &.{ ".perl", ".pl", ".pm", ".pod", ".psgi", ".t" },
         .syntax = perl_syntax,
     },
     .{
         .language = .php,
-        .extensions = &.{ ".php", ".phtml" },
         .syntax = php_syntax,
     },
     .{
+        .language = .powershell,
+        .syntax = powershell_syntax,
+    },
+    .{
         .language = .python,
-        .extensions = &.{ ".py", ".pyw" },
         .syntax = python_syntax,
     },
     .{
         .language = .r,
-        .extensions = &.{ ".R", ".r" },
         .syntax = r_syntax,
     },
     .{
         .language = .ruby,
-        .extensions = &.{ ".rake", ".rb" },
-        .filenames = &.{ "Gemfile", "Rakefile" },
         .syntax = ruby_syntax,
     },
     .{
         .language = .rust,
-        .extensions = &.{".rs"},
         .syntax = rust_syntax,
     },
     .{
         .language = .sass,
-        .extensions = &.{ ".sass", ".scss" },
         .syntax = sass_syntax,
     },
     .{
+        .language = .scala,
+        .syntax = scala_syntax,
+    },
+    .{
         .language = .sed,
-        .extensions = &.{".sed"},
         .syntax = sed_syntax,
     },
     .{
         .language = .shell,
-        .extensions = &.{ ".bash", ".fish", ".sh", ".zsh" },
         .syntax = shell_syntax,
     },
     .{
         .language = .sql,
-        .extensions = &.{".sql"},
         .syntax = sql_syntax,
     },
     .{
         .language = .svg,
-        .extensions = &.{".svg"},
         .syntax = svg_syntax,
     },
     .{
+        .language = .svelte,
+        .syntax = svelte_syntax,
+    },
+    .{
         .language = .swift,
-        .extensions = &.{".swift"},
         .syntax = swift_syntax,
     },
     .{
         .language = .tex,
-        .extensions = &.{ ".cls", ".sty", ".tex" },
         .syntax = tex_syntax,
     },
     .{
         .language = .text,
-        .extensions = &.{ ".text", ".txt" },
         .syntax = text_syntax,
     },
     .{
         .language = .toml,
-        .extensions = &.{".toml"},
         .syntax = toml_syntax,
     },
     .{
         .language = .typescript,
-        .extensions = &.{ ".cts", ".mts", ".ts", ".tsx" },
         .syntax = typescript_syntax,
     },
     .{
+        .language = .verilog,
+        .syntax = verilog_syntax,
+    },
+    .{
+        .language = .vhdl,
+        .syntax = vhdl_syntax,
+    },
+    .{
         .language = .vim_script,
-        .extensions = &.{ ".vim", ".vimrc" },
-        .filenames = &.{ ".gvimrc", ".vimrc", "_gvimrc", "_vimrc" },
         .syntax = vim_script_syntax,
     },
     .{
         .language = .xml,
-        .extensions = &.{".xml"},
         .syntax = xml_syntax,
     },
     .{
         .language = .yacc,
-        .extensions = &.{ ".y", ".yy" },
         .syntax = yacc_syntax,
     },
     .{
         .language = .yaml,
-        .extensions = &.{ ".yaml", ".yml" },
         .syntax = yaml_syntax,
     },
     .{
         .language = .zig,
-        .extensions = &.{".zig"},
         .syntax = zig_syntax,
     },
 };
@@ -649,6 +852,7 @@ const filename_languages = std.StaticStringMap(Language).initComptime(.{
     .{ ".vimrc", .vim_script },
     .{ "_gvimrc", .vim_script },
     .{ "_vimrc", .vim_script },
+    .{ "build.gradle", .groovy },
     .{ "Dockerfile", .dockerfile },
     .{ "dockerfile", .dockerfile },
     .{ "Gemfile", .ruby },
@@ -656,98 +860,135 @@ const filename_languages = std.StaticStringMap(Language).initComptime(.{
     .{ "Makefile", .makefile },
     .{ "makefile", .makefile },
     .{ "Rakefile", .ruby },
+    .{ "settings.gradle", .groovy },
 });
 
 const extension_languages = std.StaticStringMap(Language).initComptime(.{
-    .{ "asm", .assembly },
-    .{ "awk", .awk },
-    .{ "bash", .shell },
-    .{ "c", .c },
-    .{ "cc", .cpp },
-    .{ "cjs", .javascript },
-    .{ "clj", .clojure },
-    .{ "cljc", .clojure },
-    .{ "cljs", .clojure },
-    .{ "cls", .tex },
-    .{ "cpp", .cpp },
-    .{ "cs", .csharp },
-    .{ "css", .css },
-    .{ "csv", .csv },
-    .{ "cts", .typescript },
-    .{ "cxx", .cpp },
-    .{ "dart", .dart },
-    .{ "dockerfile", .dockerfile },
-    .{ "edn", .clojure },
-    .{ "fish", .shell },
-    .{ "h", .c_cpp_header },
-    .{ "hcl", .hcl },
-    .{ "hh", .c_cpp_header },
-    .{ "hpp", .c_cpp_header },
-    .{ "htm", .html },
-    .{ "html", .html },
-    .{ "hxx", .c_cpp_header },
-    .{ "j2", .jinja },
-    .{ "java", .java },
-    .{ "jinja", .jinja },
-    .{ "jinja2", .jinja },
-    .{ "js", .javascript },
-    .{ "json", .json },
-    .{ "jsx", .javascript },
-    .{ "kt", .kotlin },
-    .{ "kts", .kotlin },
-    .{ "l", .lex },
-    .{ "ll", .lex },
-    .{ "lua", .lua },
-    .{ "m", .objective_c },
-    .{ "markdown", .markdown },
-    .{ "md", .markdown },
-    .{ "mdown", .markdown },
-    .{ "mjs", .javascript },
-    .{ "mk", .makefile },
-    .{ "mkd", .markdown },
-    .{ "mm", .objective_c },
-    .{ "mts", .typescript },
-    .{ "perl", .perl },
-    .{ "php", .php },
-    .{ "pl", .perl },
-    .{ "pm", .perl },
-    .{ "pod", .perl },
-    .{ "psgi", .perl },
-    .{ "py", .python },
-    .{ "pyw", .python },
-    .{ "R", .r },
-    .{ "r", .r },
-    .{ "rake", .ruby },
-    .{ "rb", .ruby },
-    .{ "rs", .rust },
-    .{ "S", .assembly },
-    .{ "s", .assembly },
-    .{ "sass", .sass },
-    .{ "scss", .sass },
-    .{ "sed", .sed },
-    .{ "sh", .shell },
-    .{ "sql", .sql },
-    .{ "sty", .tex },
-    .{ "svg", .svg },
-    .{ "swift", .swift },
-    .{ "t", .perl },
-    .{ "tex", .tex },
-    .{ "text", .text },
-    .{ "tf", .hcl },
-    .{ "tfvars", .hcl },
-    .{ "toml", .toml },
-    .{ "ts", .typescript },
-    .{ "tsx", .typescript },
-    .{ "txt", .text },
-    .{ "vim", .vim_script },
-    .{ "vimrc", .vim_script },
-    .{ "xml", .xml },
-    .{ "y", .yacc },
-    .{ "yaml", .yaml },
-    .{ "yml", .yaml },
-    .{ "yy", .yacc },
-    .{ "zig", .zig },
-    .{ "zsh", .shell },
+    .{ ".asm", .assembly },
+    .{ ".astro", .astro },
+    .{ ".awk", .awk },
+    .{ ".bash", .shell },
+    .{ ".bat", .batch },
+    .{ ".c", .c },
+    .{ ".cc", .cpp },
+    .{ ".cjs", .javascript },
+    .{ ".clj", .clojure },
+    .{ ".cljc", .clojure },
+    .{ ".cljs", .clojure },
+    .{ ".cls", .tex },
+    .{ ".cmd", .batch },
+    .{ ".cpp", .cpp },
+    .{ ".cr", .crystal },
+    .{ ".cs", .csharp },
+    .{ ".css", .css },
+    .{ ".csv", .csv },
+    .{ ".cts", .typescript },
+    .{ ".cxx", .cpp },
+    .{ ".d", .d },
+    .{ ".dart", .dart },
+    .{ ".dockerfile", .dockerfile },
+    .{ ".edn", .clojure },
+    .{ ".erl", .erlang },
+    .{ ".ex", .elixir },
+    .{ ".exs", .elixir },
+    .{ ".fish", .shell },
+    .{ ".fs", .fsharp },
+    .{ ".fsi", .fsharp },
+    .{ ".fsx", .fsharp },
+    .{ ".go", .go },
+    .{ ".gql", .graphql },
+    .{ ".gradle", .groovy },
+    .{ ".graphql", .graphql },
+    .{ ".groovy", .groovy },
+    .{ ".h", .c_cpp_header },
+    .{ ".hcl", .hcl },
+    .{ ".hh", .c_cpp_header },
+    .{ ".hpp", .c_cpp_header },
+    .{ ".hrl", .erlang },
+    .{ ".hs", .haskell },
+    .{ ".htm", .html },
+    .{ ".html", .html },
+    .{ ".hxx", .c_cpp_header },
+    .{ ".j2", .jinja },
+    .{ ".java", .java },
+    .{ ".jinja", .jinja },
+    .{ ".jinja2", .jinja },
+    .{ ".jl", .julia },
+    .{ ".js", .javascript },
+    .{ ".json", .json },
+    .{ ".jsx", .javascript },
+    .{ ".kt", .kotlin },
+    .{ ".kts", .kotlin },
+    .{ ".l", .lex },
+    .{ ".lhs", .haskell },
+    .{ ".ll", .lex },
+    .{ ".lua", .lua },
+    .{ ".m", .objective_c },
+    .{ ".markdown", .markdown },
+    .{ ".md", .markdown },
+    .{ ".mdown", .markdown },
+    .{ ".mjs", .javascript },
+    .{ ".mk", .makefile },
+    .{ ".mkd", .markdown },
+    .{ ".ml", .ocaml },
+    .{ ".mli", .ocaml },
+    .{ ".mm", .objective_c },
+    .{ ".mts", .typescript },
+    .{ ".nim", .nim },
+    .{ ".perl", .perl },
+    .{ ".php", .php },
+    .{ ".phtml", .php },
+    .{ ".pl", .perl },
+    .{ ".pm", .perl },
+    .{ ".pod", .perl },
+    .{ ".ps1", .powershell },
+    .{ ".psd1", .powershell },
+    .{ ".psgi", .perl },
+    .{ ".psm1", .powershell },
+    .{ ".py", .python },
+    .{ ".pyw", .python },
+    .{ ".R", .r },
+    .{ ".r", .r },
+    .{ ".rake", .ruby },
+    .{ ".rb", .ruby },
+    .{ ".rs", .rust },
+    .{ ".S", .assembly },
+    .{ ".s", .assembly },
+    .{ ".sass", .sass },
+    .{ ".sc", .scala },
+    .{ ".scala", .scala },
+    .{ ".scss", .sass },
+    .{ ".sed", .sed },
+    .{ ".sh", .shell },
+    .{ ".sql", .sql },
+    .{ ".sty", .tex },
+    .{ ".sv", .verilog },
+    .{ ".svelte", .svelte },
+    .{ ".svg", .svg },
+    .{ ".svh", .verilog },
+    .{ ".swift", .swift },
+    .{ ".t", .perl },
+    .{ ".tex", .tex },
+    .{ ".text", .text },
+    .{ ".tf", .hcl },
+    .{ ".tfvars", .hcl },
+    .{ ".toml", .toml },
+    .{ ".ts", .typescript },
+    .{ ".tsx", .typescript },
+    .{ ".txt", .text },
+    .{ ".v", .verilog },
+    .{ ".vhd", .vhdl },
+    .{ ".vhdl", .vhdl },
+    .{ ".vh", .verilog },
+    .{ ".vim", .vim_script },
+    .{ ".vimrc", .vim_script },
+    .{ ".xml", .xml },
+    .{ ".y", .yacc },
+    .{ ".yaml", .yaml },
+    .{ ".yml", .yaml },
+    .{ ".yy", .yacc },
+    .{ ".zig", .zig },
+    .{ ".zsh", .shell },
 });
 
 pub fn detect(path: []const u8) ?Language {
@@ -773,45 +1014,63 @@ pub fn syntaxFor(language: Language) syntax.SyntaxSpec {
 pub fn name(language: Language) []const u8 {
     return switch (language) {
         .assembly => "Assembly",
+        .astro => "Astro",
         .awk => "Awk",
+        .batch => "Batch",
         .c => "C",
         .c_cpp_header => "C/C++ Header",
         .clojure => "Clojure",
+        .crystal => "Crystal",
         .csharp => "C#",
         .cpp => "C++",
         .csv => "CSV",
         .css => "CSS",
+        .d => "D",
         .dart => "Dart",
         .dockerfile => "Dockerfile",
+        .elixir => "Elixir",
+        .erlang => "Erlang",
+        .fsharp => "F#",
         .go => "Go",
+        .graphql => "GraphQL",
+        .groovy => "Groovy",
         .hcl => "HCL",
+        .haskell => "Haskell",
         .html => "HTML",
         .java => "Java",
         .javascript => "JavaScript",
         .jinja => "Jinja",
         .json => "JSON",
+        .julia => "Julia",
         .kotlin => "Kotlin",
         .lex => "Lex",
         .lua => "Lua",
         .makefile => "Makefile",
         .markdown => "Markdown",
+        .nim => "Nim",
         .objective_c => "Objective-C",
+        .ocaml => "OCaml",
         .perl => "Perl",
         .php => "PHP",
+        .powershell => "PowerShell",
         .python => "Python",
         .r => "R",
         .ruby => "Ruby",
         .rust => "Rust",
         .sass => "Sass",
+        .scala => "Scala",
         .sed => "sed",
         .shell => "Shell",
         .sql => "SQL",
         .svg => "SVG",
+        .svelte => "Svelte",
         .swift => "Swift",
         .tex => "TeX",
         .text => "Text",
         .toml => "TOML",
         .typescript => "TypeScript",
+        .verilog => "Verilog",
+        .vhdl => "VHDL",
         .vim_script => "Vim Script",
         .xml => "XML",
         .yacc => "Yacc",
@@ -823,7 +1082,10 @@ pub fn name(language: Language) []const u8 {
 test "detect language from filename" {
     try std.testing.expectEqual(Language.assembly, detect("src/startup.S").?);
     try std.testing.expectEqual(Language.assembly, detect("src/startup.asm").?);
+    try std.testing.expectEqual(Language.astro, detect("src/page.astro").?);
     try std.testing.expectEqual(Language.awk, detect("scripts/report.awk").?);
+    try std.testing.expectEqual(Language.batch, detect("scripts/build.bat").?);
+    try std.testing.expectEqual(Language.batch, detect("scripts/build.cmd").?);
     try std.testing.expectEqual(Language.c, detect("main.c").?);
     try std.testing.expectEqual(Language.c_cpp_header, detect("include/main.h").?);
     try std.testing.expectEqual(Language.c_cpp_header, detect("include/main.hh").?);
@@ -831,16 +1093,31 @@ test "detect language from filename" {
     try std.testing.expectEqual(Language.c_cpp_header, detect("include/main.hxx").?);
     try std.testing.expectEqual(Language.clojure, detect("src/core.clj").?);
     try std.testing.expectEqual(Language.clojure, detect("src/app.cljs").?);
+    try std.testing.expectEqual(Language.crystal, detect("src/app.cr").?);
     try std.testing.expectEqual(Language.csharp, detect("src/app.cs").?);
     try std.testing.expectEqual(Language.cpp, detect("src/main.cpp").?);
     try std.testing.expectEqual(Language.csv, detect("data/report.csv").?);
     try std.testing.expectEqual(Language.css, detect("src/app.css").?);
+    try std.testing.expectEqual(Language.d, detect("src/app.d").?);
     try std.testing.expectEqual(Language.dart, detect("lib/main.dart").?);
     try std.testing.expectEqual(Language.dockerfile, detect("Dockerfile").?);
     try std.testing.expectEqual(Language.dockerfile, detect("docker/app.dockerfile").?);
+    try std.testing.expectEqual(Language.elixir, detect("lib/app.ex").?);
+    try std.testing.expectEqual(Language.elixir, detect("test/app_test.exs").?);
+    try std.testing.expectEqual(Language.erlang, detect("src/app.erl").?);
+    try std.testing.expectEqual(Language.erlang, detect("include/app.hrl").?);
+    try std.testing.expectEqual(Language.fsharp, detect("src/App.fs").?);
+    try std.testing.expectEqual(Language.fsharp, detect("src/App.fsi").?);
+    try std.testing.expectEqual(Language.fsharp, detect("src/App.fsx").?);
     try std.testing.expectEqual(Language.go, detect("main.go").?);
+    try std.testing.expectEqual(Language.graphql, detect("schema.graphql").?);
+    try std.testing.expectEqual(Language.graphql, detect("schema.gql").?);
+    try std.testing.expectEqual(Language.groovy, detect("src/App.groovy").?);
+    try std.testing.expectEqual(Language.groovy, detect("build.gradle").?);
     try std.testing.expectEqual(Language.hcl, detect("main.tf").?);
     try std.testing.expectEqual(Language.hcl, detect("variables.tfvars").?);
+    try std.testing.expectEqual(Language.haskell, detect("src/Main.hs").?);
+    try std.testing.expectEqual(Language.haskell, detect("src/Main.lhs").?);
     try std.testing.expectEqual(Language.html, detect("public/index.html").?);
     try std.testing.expectEqual(Language.java, detect("src/Main.java").?);
     try std.testing.expectEqual(Language.javascript, detect("src/app.js").?);
@@ -851,6 +1128,7 @@ test "detect language from filename" {
     try std.testing.expectEqual(Language.jinja, detect("templates/index.jinja2").?);
     try std.testing.expectEqual(Language.jinja, detect("templates/index.j2").?);
     try std.testing.expectEqual(Language.json, detect("package.json").?);
+    try std.testing.expectEqual(Language.julia, detect("src/app.jl").?);
     try std.testing.expectEqual(Language.kotlin, detect("src/Main.kt").?);
     try std.testing.expectEqual(Language.kotlin, detect("build.gradle.kts").?);
     try std.testing.expectEqual(Language.lex, detect("parser/scanner.l").?);
@@ -858,11 +1136,18 @@ test "detect language from filename" {
     try std.testing.expectEqual(Language.makefile, detect("Makefile").?);
     try std.testing.expectEqual(Language.makefile, detect("rules.mk").?);
     try std.testing.expectEqual(Language.markdown, detect("README.md").?);
+    try std.testing.expectEqual(Language.nim, detect("src/app.nim").?);
     try std.testing.expectEqual(Language.objective_c, detect("src/AppDelegate.m").?);
     try std.testing.expectEqual(Language.objective_c, detect("src/AppDelegate.mm").?);
+    try std.testing.expectEqual(Language.ocaml, detect("src/app.ml").?);
+    try std.testing.expectEqual(Language.ocaml, detect("src/app.mli").?);
     try std.testing.expectEqual(Language.perl, detect("script/report.pl").?);
     try std.testing.expectEqual(Language.perl, detect("lib/Zloc.pm").?);
     try std.testing.expectEqual(Language.php, detect("src/index.php").?);
+    try std.testing.expectEqual(Language.php, detect("src/index.phtml").?);
+    try std.testing.expectEqual(Language.powershell, detect("scripts/build.ps1").?);
+    try std.testing.expectEqual(Language.powershell, detect("scripts/module.psm1").?);
+    try std.testing.expectEqual(Language.powershell, detect("scripts/data.psd1").?);
     try std.testing.expectEqual(Language.python, detect("src/main.py").?);
     try std.testing.expectEqual(Language.r, detect("analysis.r").?);
     try std.testing.expectEqual(Language.r, detect("analysis.R").?);
@@ -871,16 +1156,25 @@ test "detect language from filename" {
     try std.testing.expectEqual(Language.ruby, detect("Gemfile").?);
     try std.testing.expectEqual(Language.rust, detect("src/main.rs").?);
     try std.testing.expectEqual(Language.sass, detect("src/app.scss").?);
+    try std.testing.expectEqual(Language.scala, detect("src/Main.scala").?);
+    try std.testing.expectEqual(Language.scala, detect("src/Main.sc").?);
     try std.testing.expectEqual(Language.sed, detect("scripts/edit.sed").?);
     try std.testing.expectEqual(Language.shell, detect("scripts/build.sh").?);
     try std.testing.expectEqual(Language.sql, detect("schema.sql").?);
     try std.testing.expectEqual(Language.svg, detect("assets/logo.svg").?);
+    try std.testing.expectEqual(Language.svelte, detect("src/App.svelte").?);
     try std.testing.expectEqual(Language.swift, detect("Sources/App/main.swift").?);
     try std.testing.expectEqual(Language.tex, detect("paper.tex").?);
     try std.testing.expectEqual(Language.text, detect("notes.txt").?);
     try std.testing.expectEqual(Language.toml, detect("Cargo.toml").?);
     try std.testing.expectEqual(Language.typescript, detect("src/app.ts").?);
     try std.testing.expectEqual(Language.typescript, detect("src/app.tsx").?);
+    try std.testing.expectEqual(Language.verilog, detect("rtl/core.v").?);
+    try std.testing.expectEqual(Language.verilog, detect("rtl/core.vh").?);
+    try std.testing.expectEqual(Language.verilog, detect("rtl/core.sv").?);
+    try std.testing.expectEqual(Language.verilog, detect("rtl/core.svh").?);
+    try std.testing.expectEqual(Language.vhdl, detect("rtl/core.vhd").?);
+    try std.testing.expectEqual(Language.vhdl, detect("rtl/core.vhdl").?);
     try std.testing.expectEqual(Language.vim_script, detect(".vimrc").?);
     try std.testing.expectEqual(Language.vim_script, detect("plugin/zloc.vim").?);
     try std.testing.expectEqual(Language.xml, detect("feed.xml").?);
@@ -889,6 +1183,116 @@ test "detect language from filename" {
     try std.testing.expectEqual(Language.zig, detect("src/root.zig").?);
 
     try std.testing.expect(detect("README.unknown") == null);
+}
+
+test "new language syntax rules" {
+    try expectCounts(.astro,
+        \\<h1>Hello</h1>
+        \\<!-- comment -->
+        \\<p>World</p>
+    , 0, 1, 2);
+
+    try expectCounts(.batch,
+        \\@echo off
+        \\REM comment
+        \\echo done
+    , 0, 1, 2);
+
+    try expectCounts(.crystal,
+        \\puts "https://example.com"
+        \\# comment
+        \\puts "done"
+    , 0, 1, 2);
+
+    try expectCounts(.d,
+        \\import std.stdio;
+        \\/+ comment +/
+        \\writeln("done");
+    , 0, 1, 2);
+
+    try expectCounts(.elixir,
+        \\IO.puts("https://example.com")
+        \\# comment
+        \\IO.puts("done")
+    , 0, 1, 2);
+
+    try expectCounts(.erlang,
+        \\main() ->
+        \\% comment
+        \\ok.
+    , 0, 1, 2);
+
+    try expectCounts(.fsharp,
+        \\let url = "https://example.com"
+        \\// comment
+        \\printfn "%s" url
+    , 0, 1, 2);
+
+    try expectCounts(.graphql,
+        \\type Query {
+        \\# comment
+        \\  user: User
+    , 0, 1, 2);
+
+    try expectCounts(.groovy,
+        \\def url = "https://example.com"
+        \\// comment
+        \\println url
+    , 0, 1, 2);
+
+    try expectCounts(.haskell,
+        \\main = do
+        \\-- comment
+        \\  putStrLn "done"
+    , 0, 1, 2);
+
+    try expectCounts(.julia,
+        \\url = "https://example.com"
+        \\# comment
+        \\println(url)
+    , 0, 1, 2);
+
+    try expectCounts(.nim,
+        \\let url = "https://example.com"
+        \\# comment
+        \\echo url
+    , 0, 1, 2);
+
+    try expectCounts(.ocaml,
+        \\let url = "https://example.com"
+        \\(* comment *)
+        \\print_endline url
+    , 0, 1, 2);
+
+    try expectCounts(.powershell,
+        \\$url = "https://example.com"
+        \\# comment
+        \\Write-Output $url
+    , 0, 1, 2);
+
+    try expectCounts(.scala,
+        \\val url = "https://example.com"
+        \\// comment
+        \\println(url)
+    , 0, 1, 2);
+
+    try expectCounts(.svelte,
+        \\<script>let name = "zloc";</script>
+        \\<!-- comment -->
+        \\<h1>{name}</h1>
+    , 0, 1, 2);
+
+    try expectCounts(.verilog,
+        \\module top;
+        \\// comment
+        \\endmodule
+    , 0, 1, 2);
+
+    try expectCounts(.vhdl,
+        \\entity top is
+        \\-- comment
+        \\end top;
+    , 0, 1, 2);
 }
 
 fn expectCounts(language: Language, text: []const u8, blank: u64, comment: u64, code: u64) !void {
@@ -1059,7 +1463,7 @@ test "CSV code" {
         \\
     ;
 
-    try expectCounts(.csv, text, 1, 0, 2);
+    try expectCounts(.csv, text, 0, 0, 2);
 }
 
 test "CSS code" {
@@ -1493,7 +1897,7 @@ test "TeX code" {
         \\\end{document}
     ;
 
-    try expectCounts(.tex, text, 1, 1, 3);
+    try expectCounts(.tex, text, 1, 1, 4);
 }
 
 test "Text code" {
