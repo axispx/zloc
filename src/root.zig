@@ -1,6 +1,7 @@
 const std = @import("std");
 const languages = @import("languages.zig");
 const lexer = @import("lexer.zig");
+const report = @import("report.zig");
 
 pub const Language = languages.Language;
 pub const Counts = lexer.Counts;
@@ -17,7 +18,7 @@ pub fn countTextOptions(language: Language, text: []const u8, options: CountOpti
 
 pub fn run(io: std.Io, args: []const [:0]const u8) !void {
     if (args.len < 2) {
-        std.debug.print("usage: {s} [--debug-lines] <text>\n", .{args[0]});
+        std.debug.print("usage: {s} [--debug-lines] <file>...\n", .{args[0]});
         return;
     }
 
@@ -26,7 +27,7 @@ pub fn run(io: std.Io, args: []const [:0]const u8) !void {
 
     if (std.mem.eql(u8, args[1], "--debug-lines")) {
         if (args.len < 3) {
-            std.debug.print("usage: {s} [--debug-lines] <text>\n", .{args[0]});
+            std.debug.print("usage: {s} [--debug-lines] <file>...\n", .{args[0]});
             return;
         }
 
@@ -34,23 +35,29 @@ pub fn run(io: std.Io, args: []const [:0]const u8) !void {
         path_index = 2;
     }
 
-    const path = args[path_index];
-
-    const language = languages.detect(path) orelse {
-        std.debug.print("unsupported file type: {s}\n", .{path});
-        return;
-    };
-
     var buffer: [64 * 1024]u8 = undefined;
-    const text = try std.Io.Dir.cwd().readFile(io, path, &buffer);
+    var summaries = report.initSummaries();
 
-    const counts = countTextOptions(language, text, .{
-        .debug_lines = debug_lines,
-    });
+    for (args[path_index..]) |path| {
+        const language = languages.detect(path) orelse {
+            std.debug.print("unsupported file type: {s}\n", .{path});
+            continue;
+        };
 
-    std.debug.print("blank:   {}\n", .{counts.blank});
-    std.debug.print("comment: {}\n", .{counts.comment});
-    std.debug.print("code:    {}\n", .{counts.code});
+        const text = try std.Io.Dir.cwd().readFile(io, path, &buffer);
+
+        if (debug_lines) {
+            std.debug.print("{s}:\n", .{path});
+        }
+
+        const counts = countTextOptions(language, text, .{
+            .debug_lines = debug_lines,
+        });
+
+        report.addFile(&summaries, language, counts);
+    }
+
+    report.printSummaryTable(&summaries);
 }
 
 test "C code" {

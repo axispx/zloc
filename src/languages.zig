@@ -17,6 +17,12 @@ const LanguageSpec = struct {
     syntax: syntax.SyntaxSpec,
 };
 
+pub const supported_languages = [_]Language{
+    .c,
+    .go,
+    .zig,
+};
+
 pub const c_syntax = syntax.SyntaxSpec{
     .line_comments = &.{.{ .marker = "//" }},
     .block_comments = &.{.{ .start = "/*", .end = "*/" }},
@@ -93,6 +99,18 @@ pub fn syntaxFor(language: Language) syntax.SyntaxSpec {
     }
 
     return .{};
+}
+
+pub fn name(language: Language) []const u8 {
+    return switch (language) {
+        .c => "C",
+        .go => "Go",
+        .javascript => "JavaScript",
+        .markdown => "Markdown",
+        .python => "Python",
+        .typescript => "TypeScript",
+        .zig => "Zig",
+    };
 }
 
 test "detect language from filename" {

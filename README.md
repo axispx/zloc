@@ -4,7 +4,7 @@
 
 ## Status
 
-`zloc` is currently a single-file counter. It detects the language from the file extension, runs a lightweight lexer for that language, and prints line counts.
+`zloc` currently counts one or more file paths. It detects the language from each file extension, runs a lightweight lexer for that language, and prints line counts.
 
 ## Supported Languages
 
@@ -22,18 +22,21 @@ Build the executable:
 zig build
 ```
 
-Count one file:
+Count one or more files:
 
 ```sh
-zig build run -- path/to/file.zig
+zig build run -- path/to/file.zig path/to/file.go
 ```
 
 Example output:
 
 ```text
-blank:   4
-comment: 2
-code:    19
+Language  Files  Blank  Comment  Code
+-------------------------------------
+Go            1      2        5     6
+Zig           1      2        1     6
+-------------------------------------
+Total         2      4        6    12
 ```
 
 Print line-by-line classifications for debugging:
@@ -59,14 +62,14 @@ The main implementation is split across:
 
 ## Roadmap
 
-- [x] Accept one file path from CLI arguments.
+- [x] Accept one or more file paths from CLI arguments.
 - [x] Detect language from the file extension.
 - [x] Count blank lines, comment lines, and code lines.
 - [x] Support C, Go, and Zig.
 - [x] Add debug output for line classification.
-- [ ] Accept multiple file paths.
-- [ ] Aggregate totals by language.
-- [ ] Print table output with a total row.
+- [x] Accept multiple file paths.
+- [x] Aggregate totals by language.
+- [x] Print table output with a total row.
 - [ ] Walk directories recursively.
 - [ ] Ignore common generated and dependency directories.
 - [ ] Add more languages.
