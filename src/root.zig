@@ -1,4 +1,5 @@
 const std = @import("std");
+const cli_args = @import("args.zig");
 const languages = @import("languages.zig");
 const lexer = @import("lexer.zig");
 const report = @import("report.zig");
@@ -17,36 +18,33 @@ pub fn countTextOptions(language: Language, text: []const u8, options: CountOpti
     return lexer.countWithSyntaxOptions(spec, text, options);
 }
 
-pub fn run(io: std.Io, args: []const [:0]const u8) !void {
-    if (args.len < 2) {
-        std.debug.print("usage: {s} [--debug] <file>...\n", .{args[0]});
-        return;
-    }
-
-    var debug = false;
-    var path_index: usize = 1;
-
-    if (std.mem.eql(u8, args[1], "--debug")) {
-        if (args.len < 3) {
-            std.debug.print("usage: {s} [--debug] <file>...\n", .{args[0]});
+pub fn run(io: std.Io, allocator: std.mem.Allocator, args: []const [:0]const u8) !void {
+    const options = switch (cli_args.parse(args)) {
+        .options => |options| options,
+        .missing_paths => {
+            cli_args.printUsage(args[0]);
             return;
-        }
-
-        debug = true;
-        path_index = 2;
-    }
+        },
+        .unknown_option => |option| {
+            std.debug.print("unknown option: {s}\n", .{option});
+            cli_args.printUsage(args[0]);
+            return;
+        },
+    };
 
     var buffer: [64 * 1024]u8 = undefined;
     var summaries = report.initSummaries();
 
     var context = walker.Context{
+        .allocator = allocator,
         .io = io,
-        .debug = debug,
+        .debug = options.debug,
+        .verbose = options.verbose,
         .summaries = &summaries,
         .buffer = &buffer,
     };
 
-    for (args[path_index..]) |path| {
+    for (options.paths) |path| {
         try walker.countPath(&context, path);
     }
 

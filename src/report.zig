@@ -148,10 +148,10 @@ fn includeLanguage(widths: *ColumnWidths, language: []const u8) void {
 }
 
 fn includeCounts(widths: *ColumnWidths, files: u64, counts: Counts) void {
-    widths.files = @max(widths.files, decimalWidth(files));
-    widths.blank = @max(widths.blank, decimalWidth(counts.blank));
-    widths.comment = @max(widths.comment, decimalWidth(counts.comment));
-    widths.code = @max(widths.code, decimalWidth(counts.code));
+    widths.files = @max(widths.files, commaWidth(files));
+    widths.blank = @max(widths.blank, commaWidth(counts.blank));
+    widths.comment = @max(widths.comment, commaWidth(counts.comment));
+    widths.code = @max(widths.code, commaWidth(counts.code));
 }
 
 fn decimalWidth(value: u64) usize {
@@ -166,6 +166,11 @@ fn decimalWidth(value: u64) usize {
     return width;
 }
 
+fn commaWidth(value: u64) usize {
+    const digits = decimalWidth(value);
+    return digits + ((digits - 1) / 3);
+}
+
 fn printLeft(text: []const u8, width: usize) void {
     std.debug.print("{s}", .{text});
     printSpaces(width -| text.len);
@@ -178,8 +183,34 @@ fn printRight(text: []const u8, width: usize) void {
 
 fn printRightInt(value: u64, width: usize) void {
     var buffer: [32]u8 = undefined;
-    const text = std.fmt.bufPrint(&buffer, "{}", .{value}) catch unreachable;
+    const text = formatCommaInt(&buffer, value);
     printRight(text, width);
+}
+
+fn formatCommaInt(buffer: []u8, value: u64) []const u8 {
+    var digits_buffer: [20]u8 = undefined;
+    const digits = std.fmt.bufPrint(&digits_buffer, "{}", .{value}) catch unreachable;
+    const comma_count = (digits.len - 1) / 3;
+    const output_len = digits.len + comma_count;
+
+    var digit_index = digits.len;
+    var output_index = output_len;
+    var group_digits: usize = 0;
+
+    while (digit_index > 0) {
+        if (group_digits == 3) {
+            output_index -= 1;
+            buffer[output_index] = ',';
+            group_digits = 0;
+        }
+
+        digit_index -= 1;
+        output_index -= 1;
+        buffer[output_index] = digits[digit_index];
+        group_digits += 1;
+    }
+
+    return buffer[0..output_len];
 }
 
 fn printGap() void {
@@ -191,4 +222,13 @@ fn printSpaces(count: usize) void {
     while (i < count) : (i += 1) {
         std.debug.print(" ", .{});
     }
+}
+
+test "formats integers with commas" {
+    var buffer: [32]u8 = undefined;
+
+    try std.testing.expectEqualStrings("0", formatCommaInt(&buffer, 0));
+    try std.testing.expectEqualStrings("999", formatCommaInt(&buffer, 999));
+    try std.testing.expectEqualStrings("1,000", formatCommaInt(&buffer, 1000));
+    try std.testing.expectEqualStrings("1,234,567", formatCommaInt(&buffer, 1234567));
 }

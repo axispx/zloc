@@ -4,10 +4,17 @@ const report = @import("report.zig");
 const lexer = @import("lexer.zig");
 
 pub const Context = struct {
+    allocator: std.mem.Allocator,
     io: std.Io,
     debug: bool,
+    verbose: bool,
     summaries: *report.SummarySet,
     buffer: *[64 * 1024]u8,
+};
+
+const GitListResult = enum {
+    used_git,
+    not_git,
 };
 
 pub fn countPath(context: *Context, path: []const u8) !void {
@@ -15,7 +22,9 @@ pub fn countPath(context: *Context, path: []const u8) !void {
 
     const stat = cwd.statFile(context.io, path, .{}) catch |err| switch (err) {
         error.FileNotFound => {
-            std.debug.print("path not found: {s}\n", .{path});
+            if (context.verbose) {
+                std.debug.print("path not found: {s}\n", .{path});
+            }
             return;
         },
         else => return err,
@@ -25,14 +34,18 @@ pub fn countPath(context: *Context, path: []const u8) !void {
         .file => try countFile(context, path),
         .directory => try countDirectory(context, path),
         else => {
-            std.debug.print("unsupported path type: {s}\n", .{path});
+            if (context.verbose) {
+                std.debug.print("unsupported path type: {s}\n", .{path});
+            }
         },
     }
 }
 
 fn countFile(context: *Context, path: []const u8) !void {
     const language = languages.detect(path) orelse {
-        std.debug.print("unsupported file type: {s}\n", .{path});
+        if (context.verbose) {
+            std.debug.print("unsupported file type: {s}\n", .{path});
+        }
         return;
     };
 
@@ -51,6 +64,11 @@ fn countFile(context: *Context, path: []const u8) !void {
 }
 
 fn countDirectory(context: *Context, path: []const u8) !void {
+    switch (try countGitDirectory(context, path)) {
+        .used_git => return,
+        .not_git => {},
+    }
+
     var dir = try std.Io.Dir.cwd().openDir(context.io, path, .{
         .iterate = true,
     });
@@ -71,4 +89,48 @@ fn countDirectory(context: *Context, path: []const u8) !void {
             else => {},
         }
     }
+}
+
+fn countGitDirectory(context: *Context, path: []const u8) !GitListResult {
+    const result = std.process.run(context.allocator, context.io, .{
+        .argv = &.{ "git", "-C", path, "ls-files", "-z" },
+        .stdout_limit = .limited(32 * 1024 * 1024),
+        .stderr_limit = .limited(1024 * 1024),
+    }) catch |err| switch (err) {
+        error.FileNotFound => return .not_git,
+        else => return err,
+    };
+    defer context.allocator.free(result.stdout);
+    defer context.allocator.free(result.stderr);
+
+    switch (result.term) {
+        .exited => |code| {
+            if (code != 0) {
+                return .not_git;
+            }
+        },
+        else => return .not_git,
+    }
+
+    if (context.verbose) {
+        std.debug.print("using git ls-files: {s}\n", .{path});
+    }
+
+    var files = std.mem.splitScalar(u8, result.stdout, 0);
+    while (files.next()) |file| {
+        if (file.len == 0) {
+            continue;
+        }
+
+        var file_path_buffer: [std.fs.max_path_bytes]u8 = undefined;
+        const file_path = try std.fmt.bufPrint(
+            &file_path_buffer,
+            "{s}/{s}",
+            .{ path, file },
+        );
+
+        try countFile(context, file_path);
+    }
+
+    return .used_git;
 }
