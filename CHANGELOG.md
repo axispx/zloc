@@ -2,6 +2,12 @@
 
 All notable changes to `zloc` will be documented in this file.
 
+## 0.1.1 - 2026-06-04
+
+### Added
+
+- `build.zig.zon` package manifest.
+
 ## 0.1.0 - 2026-06-04
 
 ### Added

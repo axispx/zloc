@@ -1,0 +1,14 @@
+.{
+    .name = .zloc,
+    .version = "0.1.1",
+    .fingerprint = 0x52d5ea2a8e6bbe77, // Changing this has security and trust implications.
+    .minimum_zig_version = "0.16.0",
+    .dependencies = .{},
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+        "LICENSE",
+        "README.md",
+    },
+}

@@ -4,11 +4,11 @@ const languages = @import("languages.zig");
 const lexer = @import("lexer.zig");
 const report = @import("report.zig");
 const walker = @import("walker.zig");
+const build_options = @import("build_options");
 
 pub const Language = languages.Language;
 pub const Counts = lexer.Counts;
 pub const CountOptions = lexer.CountOptions;
-pub const version = "0.1.0";
 
 pub fn countText(language: Language, text: []const u8) Counts {
     return countTextOptions(language, text, .{});
@@ -23,7 +23,7 @@ pub fn run(io: std.Io, allocator: std.mem.Allocator, args: []const [:0]const u8)
     const options = switch (cli_args.parse(args)) {
         .options => |options| options,
         .version => {
-            std.debug.print("zloc {s}\n", .{version});
+            std.debug.print("zloc {s}\n", .{build_options.version});
             return;
         },
         .missing_paths => {

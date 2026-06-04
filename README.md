@@ -14,7 +14,7 @@ For directory inputs inside a Git repository, `zloc` uses `git ls-files` so file
 
 ## Install
 
-Requires Zig.
+Requires Zig 0.16.0.
 
 ### From Source
 
