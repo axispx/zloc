@@ -13,10 +13,11 @@ pub const LanguageSummary = struct {
 
 pub const SummarySet = [languages.supported_languages.len]LanguageSummary;
 
-const ColumnGap = 2;
+const ColumnGap = 4;
+const LanguageColumnWidth = 24;
 
 const ColumnWidths = struct {
-    language: usize = "Language".len,
+    language: usize = LanguageColumnWidth,
     files: usize = "Files".len,
     blank: usize = "Blank".len,
     comment: usize = "Comment".len,
@@ -61,6 +62,8 @@ pub fn printSummaryTable(summaries: []const LanguageSummary) void {
     var total = LanguageSummary{
         .language = .c,
     };
+    var sorted: [languages.supported_languages.len]LanguageSummary = undefined;
+    var sorted_count: usize = 0;
 
     for (summaries) |summary| {
         if (summary.files == 0) {
@@ -69,22 +72,34 @@ pub fn printSummaryTable(summaries: []const LanguageSummary) void {
 
         total.files += summary.files;
         addCounts(&total.counts, summary.counts);
+        sorted[sorted_count] = summary;
+        sorted_count += 1;
     }
 
     const widths = calculateWidths(summaries, total);
+    sortByCode(sorted[0..sorted_count]);
 
     printHeader(widths);
 
-    for (summaries) |summary| {
-        if (summary.files == 0) {
-            continue;
-        }
-
+    for (sorted[0..sorted_count]) |summary| {
         printRow(widths, languages.name(summary.language), summary.files, summary.counts);
     }
 
     printSeparator(widths);
     printRow(widths, "Total", total.files, total.counts);
+    printSeparator(widths);
+}
+
+fn sortByCode(summaries: []LanguageSummary) void {
+    std.mem.sort(LanguageSummary, summaries, {}, compareByCodeDesc);
+}
+
+fn compareByCodeDesc(_: void, lhs: LanguageSummary, rhs: LanguageSummary) bool {
+    if (lhs.counts.code != rhs.counts.code) {
+        return lhs.counts.code > rhs.counts.code;
+    }
+
+    return std.mem.lessThan(u8, languages.name(lhs.language), languages.name(rhs.language));
 }
 
 fn calculateWidths(summaries: []const LanguageSummary, total: LanguageSummary) ColumnWidths {
@@ -106,6 +121,7 @@ fn calculateWidths(summaries: []const LanguageSummary, total: LanguageSummary) C
 }
 
 fn printHeader(widths: ColumnWidths) void {
+    printSeparator(widths);
     printLeft("Language", widths.language);
     printGap();
     printRight("Files", widths.files);
@@ -231,4 +247,18 @@ test "formats integers with commas" {
     try std.testing.expectEqualStrings("999", formatCommaInt(&buffer, 999));
     try std.testing.expectEqualStrings("1,000", formatCommaInt(&buffer, 1000));
     try std.testing.expectEqualStrings("1,234,567", formatCommaInt(&buffer, 1234567));
+}
+
+test "sorts summaries by code descending" {
+    var summaries = [_]LanguageSummary{
+        .{ .language = .zig, .files = 1, .counts = .{ .code = 4 } },
+        .{ .language = .c, .files = 1, .counts = .{ .code = 9 } },
+        .{ .language = .go, .files = 1, .counts = .{ .code = 6 } },
+    };
+
+    sortByCode(&summaries);
+
+    try std.testing.expectEqual(Language.c, summaries[0].language);
+    try std.testing.expectEqual(Language.go, summaries[1].language);
+    try std.testing.expectEqual(Language.zig, summaries[2].language);
 }

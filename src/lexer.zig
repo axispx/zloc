@@ -92,14 +92,14 @@ const Scanner = struct {
             _ = rule;
             self.line.markCode();
             self.mode = .line_string;
-        } else if (self.matchingLineComment()) |rule| {
-            self.line.markComment();
-            self.mode = .line_comment;
-            self.i += rule.marker.len - 1;
         } else if (self.matchBlockComment()) |rule| {
             self.line.markComment();
             self.mode = .{ .block_comment = .{ .rule = rule } };
             self.i += rule.start.len - 1;
+        } else if (self.matchingLineComment()) |rule| {
+            self.line.markComment();
+            self.mode = .line_comment;
+            self.i += rule.marker.len - 1;
         } else if (self.matchQuoted()) |rule| {
             self.line.markCode();
             self.mode = .{ .quoted = rule };
@@ -322,6 +322,22 @@ test "counts block comments" {
     ;
 
     try expectCounts(spec, text, 0, 3, 2);
+}
+
+test "matches block comments before overlapping line comments" {
+    const spec = syntax.SyntaxSpec{
+        .line_comments = &.{.{ .marker = "--" }},
+        .block_comments = &.{.{ .start = "--[[", .end = "]]" }},
+    };
+
+    const text =
+        \\--[[
+        \\comment
+        \\]]
+        \\code
+    ;
+
+    try expectCounts(spec, text, 0, 3, 1);
 }
 
 test "ignores comment markers inside quoted strings" {
