@@ -10,11 +10,13 @@ For directory inputs inside a Git worktree, `zloc` uses `git ls-files` so ignore
 
 ## Supported Languages
 
-| Language | Extensions |
-| -------- | ---------- |
-| C        | `.c`, `.h` |
-| Go       | `.go`      |
-| Zig      | `.zig`     |
+| Language   | Extensions                     |
+| ---------- | ------------------------------ |
+| C          | `.c`, `.h`                     |
+| Go         | `.go`                          |
+| JavaScript | `.js`, `.jsx`, `.mjs`, `.cjs` |
+| TypeScript | `.ts`, `.tsx`, `.mts`, `.cts` |
+| Zig        | `.zig`                         |
 
 ## Usage
 

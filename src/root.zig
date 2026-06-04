@@ -122,6 +122,7 @@ test "Go code" {
         \\package main
         \\
         \\// line comment
+        \\/// doc comment
         \\/*
         \\block comment
         \\
@@ -137,6 +138,50 @@ test "Go code" {
     const counts = countText(.go, text);
 
     try std.testing.expectEqual(@as(u64, 2), counts.blank);
-    try std.testing.expectEqual(@as(u64, 5), counts.comment);
+    try std.testing.expectEqual(@as(u64, 6), counts.comment);
     try std.testing.expectEqual(@as(u64, 6), counts.code);
+}
+
+test "JavaScript code" {
+    const text =
+        \\const url = "https://example.com";
+        \\
+        \\// line comment
+        \\/*
+        \\block comment
+        \\
+        \\*/
+        \\
+        \\const message = `// not a comment
+        \\still template content`;
+        \\console.log(message); // trailing comment
+    ;
+
+    const counts = countText(.javascript, text);
+
+    try std.testing.expectEqual(@as(u64, 2), counts.blank);
+    try std.testing.expectEqual(@as(u64, 5), counts.comment);
+    try std.testing.expectEqual(@as(u64, 4), counts.code);
+}
+
+test "TypeScript code" {
+    const text =
+        \\const url = "https://example.com";
+        \\
+        \\// line comment
+        \\/*
+        \\block comment
+        \\
+        \\*/
+        \\
+        \\const message = `// not a comment
+        \\still template content`;
+        \\console.log(message); // trailing comment
+    ;
+
+    const counts = countText(.typescript, text);
+
+    try std.testing.expectEqual(@as(u64, 2), counts.blank);
+    try std.testing.expectEqual(@as(u64, 5), counts.comment);
+    try std.testing.expectEqual(@as(u64, 4), counts.code);
 }

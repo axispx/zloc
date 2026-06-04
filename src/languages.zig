@@ -4,6 +4,8 @@ const syntax = @import("syntax.zig");
 pub const Language = enum {
     c,
     go,
+    javascript,
+    typescript,
     zig,
 };
 
@@ -16,6 +18,8 @@ const LanguageSpec = struct {
 pub const supported_languages = [_]Language{
     .c,
     .go,
+    .javascript,
+    .typescript,
     .zig,
 };
 
@@ -38,6 +42,18 @@ pub const go_syntax = syntax.SyntaxSpec{
     },
 };
 
+pub const javascript_syntax = syntax.SyntaxSpec{
+    .line_comments = &.{.{ .marker = "//" }},
+    .block_comments = &.{.{ .start = "/*", .end = "*/" }},
+    .quoted = &.{
+        .{ .start = "\"", .end = "\"", .escape = '\\' },
+        .{ .start = "'", .end = "'", .escape = '\\' },
+        .{ .start = "`", .end = "`", .escape = '\\', .multiline = true },
+    },
+};
+
+pub const typescript_syntax = javascript_syntax;
+
 pub const zig_syntax = syntax.SyntaxSpec{
     .line_comments = &.{.{ .marker = "//" }},
     .quoted = &.{
@@ -59,6 +75,16 @@ pub const specs = [_]LanguageSpec{
         .language = .go,
         .extensions = &.{".go"},
         .syntax = go_syntax,
+    },
+    .{
+        .language = .javascript,
+        .extensions = &.{ ".js", ".jsx", ".mjs", ".cjs" },
+        .syntax = javascript_syntax,
+    },
+    .{
+        .language = .typescript,
+        .extensions = &.{ ".ts", ".tsx", ".mts", ".cts" },
+        .syntax = typescript_syntax,
     },
     .{
         .language = .zig,
@@ -101,6 +127,8 @@ pub fn name(language: Language) []const u8 {
     return switch (language) {
         .c => "C",
         .go => "Go",
+        .javascript => "JavaScript",
+        .typescript => "TypeScript",
         .zig => "Zig",
     };
 }
@@ -108,6 +136,12 @@ pub fn name(language: Language) []const u8 {
 test "detect language from filename" {
     try std.testing.expectEqual(Language.c, detect("main.c").?);
     try std.testing.expectEqual(Language.go, detect("main.go").?);
+    try std.testing.expectEqual(Language.javascript, detect("src/app.js").?);
+    try std.testing.expectEqual(Language.javascript, detect("src/app.jsx").?);
+    try std.testing.expectEqual(Language.javascript, detect("src/app.mjs").?);
+    try std.testing.expectEqual(Language.javascript, detect("src/app.cjs").?);
+    try std.testing.expectEqual(Language.typescript, detect("src/app.ts").?);
+    try std.testing.expectEqual(Language.typescript, detect("src/app.tsx").?);
     try std.testing.expectEqual(Language.zig, detect("src/root.zig").?);
 
     try std.testing.expect(detect("README.txt") == null);
