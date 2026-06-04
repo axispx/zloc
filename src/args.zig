@@ -8,6 +8,7 @@ pub const Options = struct {
 
 pub const ParseResult = union(enum) {
     options: Options,
+    version,
     missing_paths,
     unknown_option: []const u8,
 };
@@ -23,7 +24,9 @@ pub fn parse(raw_args: []const [:0]const u8) ParseResult {
 
     var path_index: usize = 1;
     while (path_index < raw_args.len and std.mem.startsWith(u8, raw_args[path_index], "--")) {
-        if (std.mem.eql(u8, raw_args[path_index], "--debug")) {
+        if (std.mem.eql(u8, raw_args[path_index], "--version")) {
+            return .version;
+        } else if (std.mem.eql(u8, raw_args[path_index], "--debug")) {
             options.debug = true;
         } else if (std.mem.eql(u8, raw_args[path_index], "--verbose")) {
             options.verbose = true;
@@ -43,7 +46,7 @@ pub fn parse(raw_args: []const [:0]const u8) ParseResult {
 }
 
 pub fn printUsage(program_name: []const u8) void {
-    std.debug.print("usage: {s} [--debug] [--verbose] <file-or-directory>...\n", .{program_name});
+    std.debug.print("usage: {s} [--debug] [--verbose] [--version] <file-or-directory>...\n", .{program_name});
 }
 
 test "parses paths without flags" {
@@ -91,6 +94,15 @@ test "requires at least one path" {
     };
 
     try std.testing.expectEqual(ParseResult.missing_paths, parse(&raw_args));
+}
+
+test "parses version flag" {
+    const raw_args = [_][:0]const u8{
+        "zloc",
+        "--version",
+    };
+
+    try std.testing.expectEqual(ParseResult.version, parse(&raw_args));
 }
 
 test "rejects unknown flags" {
