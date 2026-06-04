@@ -1,29 +1,38 @@
 # zloc
 
-`zloc` is a small `cloc`-style command line tool written in Zig. It counts blank lines, comment lines, and code lines for source files.
+`zloc` is a small, blazingly fast ⚡ source code line counter written in Zig.
 
 ## Status
 
-`zloc` currently counts one or more file or directory paths. It detects the language from each file extension, runs a lightweight lexer for that language, and prints line counts.
+`zloc` counts one or more file or directory paths recursively. It detects the language from each file extension, runs a lightweight lexer for that language, and prints line counts.
 
-For directory inputs inside a Git worktree, `zloc` uses `git ls-files` so files are automatically filtered using `.gitignore`. Non-Git directories fall back to recursive filesystem traversal.
+For directory inputs inside a Git repository, `zloc` uses `git ls-files` so files are automatically filtered using `.gitignore`. Non-Git directories fall back to recursive filesystem traversal.
 
 ## Supported Languages
 
 Supported languages are defined in the [`Language` enum](src/languages.zig#L4).
 
-## Usage
+## Install
 
-Build the executable:
+Install `zloc` to `~/.local/bin`:
 
 ```sh
-zig build
+zig build -Doptimize=ReleaseFast --prefix ~/.local
 ```
+
+Make sure `~/.local/bin` is in your `PATH`:
+
+```sh
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+## Usage
 
 Count one or more files or directories:
 
 ```sh
-zig build run -- src path/to/file.go
+zloc src path/to/file.go
 ```
 
 Example output:
@@ -40,16 +49,22 @@ Total         2      4        6    12
 Print line-by-line classifications for debugging:
 
 ```sh
-zig build run -- --debug path/to/file.go
+zloc --debug path/to/file.go
 ```
 
 Print verbose output:
 
 ```sh
-zig build run -- --verbose src README.md
+zloc --verbose src README.md
 ```
 
 ## Development
+
+Build the executable locally:
+
+```sh
+zig build
+```
 
 Run tests:
 
