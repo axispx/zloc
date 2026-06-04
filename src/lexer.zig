@@ -17,10 +17,15 @@ pub const LineClassification = enum {
     code,
 };
 
+const BlockCommentState = struct {
+    rule: syntax.BlockCommentRule,
+    depth: usize = 1,
+};
+
 const Mode = union(enum) {
     normal,
     line_comment,
-    block_comment: syntax.BlockCommentRule,
+    block_comment: BlockCommentState,
     quoted: syntax.QuotedRule,
     line_string,
 };
@@ -93,7 +98,7 @@ const Scanner = struct {
             self.i += rule.marker.len - 1;
         } else if (self.matchBlockComment()) |rule| {
             self.line.markComment();
-            self.mode = .{ .block_comment = rule };
+            self.mode = .{ .block_comment = .{ .rule = rule } };
             self.i += rule.start.len - 1;
         } else if (self.matchQuoted()) |rule| {
             self.line.markCode();
@@ -113,14 +118,28 @@ const Scanner = struct {
         }
     }
 
-    fn scanBlockComment(self: *Scanner, rule: syntax.BlockCommentRule) void {
+    fn scanBlockComment(self: *Scanner, state: BlockCommentState) void {
         self.line.markComment();
 
         if (self.text[self.i] == '\n') {
             self.finishLine();
-        } else if (self.startsWithAt(rule.end)) {
-            self.mode = .normal;
-            self.i += rule.end.len - 1;
+        } else if (state.rule.nested and self.startsWithAt(state.rule.start)) {
+            self.mode = .{ .block_comment = .{
+                .rule = state.rule,
+                .depth = state.depth + 1,
+            } };
+            self.i += state.rule.start.len - 1;
+        } else if (self.startsWithAt(state.rule.end)) {
+            if (state.depth > 1) {
+                self.mode = .{ .block_comment = .{
+                    .rule = state.rule,
+                    .depth = state.depth - 1,
+                } };
+            } else {
+                self.mode = .normal;
+            }
+
+            self.i += state.rule.end.len - 1;
         }
     }
 
@@ -264,4 +283,110 @@ pub fn countWithSyntaxOptions(
     };
 
     return scanner.run();
+}
+
+fn expectCounts(spec: syntax.SyntaxSpec, text: []const u8, blank: u64, comment: u64, code: u64) !void {
+    const counts = countWithSyntax(spec, text);
+
+    try std.testing.expectEqual(blank, counts.blank);
+    try std.testing.expectEqual(comment, counts.comment);
+    try std.testing.expectEqual(code, counts.code);
+}
+
+test "counts line comments" {
+    const spec = syntax.SyntaxSpec{
+        .line_comments = &.{.{ .marker = "#" }},
+    };
+
+    const text =
+        \\code
+        \\
+        \\# comment
+        \\code # trailing comment
+    ;
+
+    try expectCounts(spec, text, 1, 1, 2);
+}
+
+test "counts block comments" {
+    const spec = syntax.SyntaxSpec{
+        .block_comments = &.{.{ .start = "/*", .end = "*/" }},
+    };
+
+    const text =
+        \\code
+        \\/*
+        \\
+        \\*/
+        \\code
+    ;
+
+    try expectCounts(spec, text, 0, 3, 2);
+}
+
+test "ignores comment markers inside quoted strings" {
+    const spec = syntax.SyntaxSpec{
+        .line_comments = &.{.{ .marker = "//" }},
+        .block_comments = &.{.{ .start = "/*", .end = "*/" }},
+        .quoted = &.{
+            .{ .start = "\"", .end = "\"", .escape = '\\' },
+        },
+    };
+
+    const text =
+        \\const url = "https://example.com/* not a comment */";
+        \\// comment
+    ;
+
+    try expectCounts(spec, text, 0, 1, 1);
+}
+
+test "counts multiline quoted strings as code" {
+    const spec = syntax.SyntaxSpec{
+        .line_comments = &.{.{ .marker = "//" }},
+        .quoted = &.{
+            .{ .start = "`", .end = "`", .multiline = true },
+        },
+    };
+
+    const text =
+        \\`// not a comment
+        \\still string`
+        \\// comment
+    ;
+
+    try expectCounts(spec, text, 0, 1, 2);
+}
+
+test "counts line strings as code" {
+    const spec = syntax.SyntaxSpec{
+        .line_comments = &.{.{ .marker = "//" }},
+        .line_strings = &.{.{ .marker = "\\\\" }},
+    };
+
+    const text =
+        \\\\// not a comment
+        \\// comment
+    ;
+
+    try expectCounts(spec, text, 0, 1, 1);
+}
+
+test "counts nested block comments" {
+    const spec = syntax.SyntaxSpec{
+        .block_comments = &.{.{ .start = "/*", .end = "*/", .nested = true }},
+    };
+
+    const text =
+        \\/*
+        \\outer
+        \\/*
+        \\inner
+        \\*/
+        \\outer again
+        \\*/
+        \\code
+    ;
+
+    try expectCounts(spec, text, 0, 7, 1);
 }

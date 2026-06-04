@@ -6,17 +6,11 @@
 
 `zloc` currently counts one or more file or directory paths. It detects the language from each file extension, runs a lightweight lexer for that language, and prints line counts.
 
-For directory inputs inside a Git worktree, `zloc` uses `git ls-files` so ignored files are skipped by Git. Non-Git directories fall back to recursive filesystem traversal.
+For directory inputs inside a Git worktree, `zloc` uses `git ls-files` so files are automatically filtered using `.gitignore`. Non-Git directories fall back to recursive filesystem traversal.
 
 ## Supported Languages
 
-| Language   | Extensions                     |
-| ---------- | ------------------------------ |
-| C          | `.c`, `.h`                     |
-| Go         | `.go`                          |
-| JavaScript | `.js`, `.jsx`, `.mjs`, `.cjs` |
-| TypeScript | `.ts`, `.tsx`, `.mts`, `.cts` |
-| Zig        | `.zig`                         |
+Supported languages are defined in the [`Language` enum](src/languages.zig#L4).
 
 ## Usage
 
