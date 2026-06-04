@@ -10,7 +10,7 @@ For directory inputs inside a Git repository, `zloc` uses `git ls-files` so file
 
 ## Supported Languages
 
-Supported languages are defined in the [`Language` enum](src/languages.zig#L4).
+`zloc` supports 60+ languages. See the full list [here](src/languages.zig#L4).
 
 ## Install
 
