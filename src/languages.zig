@@ -4,10 +4,6 @@ const syntax = @import("syntax.zig");
 pub const Language = enum {
     c,
     go,
-    javascript,
-    markdown,
-    python,
-    typescript,
     zig,
 };
 
@@ -105,10 +101,6 @@ pub fn name(language: Language) []const u8 {
     return switch (language) {
         .c => "C",
         .go => "Go",
-        .javascript => "JavaScript",
-        .markdown => "Markdown",
-        .python => "Python",
-        .typescript => "TypeScript",
         .zig => "Zig",
     };
 }

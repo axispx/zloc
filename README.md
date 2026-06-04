@@ -71,19 +71,62 @@ The main implementation is split across:
 - `src/walker.zig`: file and directory discovery
 - `src/report.zig`: aggregation and table output
 
-## Roadmap
+## Adding Language Support
 
-- [x] Accept one or more file paths from CLI arguments.
-- [x] Detect language from the file extension.
-- [x] Count blank lines, comment lines, and code lines.
-- [x] Support C, Go, and Zig.
-- [x] Add debug output for line classification.
-- [x] Accept multiple file paths.
-- [x] Aggregate totals by language.
-- [x] Print table output with a total row.
-- [x] Walk directories recursively.
-- [x] Add `.gitignore` awareness.
-- [ ] Add more languages.
+Language support is defined in `src/languages.zig` using syntax rules from `src/syntax.zig`.
+
+1. Add the language to the `Language` enum:
+
+```zig
+pub const Language = enum {
+    c,
+    go,
+    zig,
+};
+```
+
+2. Define a syntax spec:
+
+```zig
+pub const zig_syntax = syntax.SyntaxSpec{
+    .line_comments = &.{.{ .marker = "//" }},
+    .quoted = &.{
+        .{ .start = "\"", .end = "\"", .escape = '\\' },
+        .{ .start = "'", .end = "'", .escape = '\\' },
+    },
+    .line_strings = &.{
+        .{ .marker = "\\\\" },
+    },
+};
+```
+
+3. Add it to `supported_languages`:
+
+```zig
+pub const supported_languages = [_]Language{
+    .c,
+    .go,
+    .zig,
+};
+```
+
+4. Register extensions and syntax in `specs`:
+
+```zig
+.{
+    .language = .zig,
+    .extensions = &.{".zig"},
+    .syntax = zig_syntax,
+},
+```
+
+5. Add a display name in `name()`:
+
+```zig
+.zig => "Zig",
+```
+
+6. Add focused tests in `src/root.zig` for comments, strings, blank lines, and mixed code/comment lines.
 
 ## License
 
