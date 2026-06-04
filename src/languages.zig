@@ -644,36 +644,120 @@ pub const specs = [_]LanguageSpec{
     },
 };
 
+const filename_languages = std.StaticStringMap(Language).initComptime(.{
+    .{ ".gvimrc", .vim_script },
+    .{ ".vimrc", .vim_script },
+    .{ "_gvimrc", .vim_script },
+    .{ "_vimrc", .vim_script },
+    .{ "Dockerfile", .dockerfile },
+    .{ "dockerfile", .dockerfile },
+    .{ "Gemfile", .ruby },
+    .{ "GNUmakefile", .makefile },
+    .{ "Makefile", .makefile },
+    .{ "makefile", .makefile },
+    .{ "Rakefile", .ruby },
+});
+
+const extension_languages = std.StaticStringMap(Language).initComptime(.{
+    .{ "asm", .assembly },
+    .{ "awk", .awk },
+    .{ "bash", .shell },
+    .{ "c", .c },
+    .{ "cc", .cpp },
+    .{ "cjs", .javascript },
+    .{ "clj", .clojure },
+    .{ "cljc", .clojure },
+    .{ "cljs", .clojure },
+    .{ "cls", .tex },
+    .{ "cpp", .cpp },
+    .{ "cs", .csharp },
+    .{ "css", .css },
+    .{ "csv", .csv },
+    .{ "cts", .typescript },
+    .{ "cxx", .cpp },
+    .{ "dart", .dart },
+    .{ "dockerfile", .dockerfile },
+    .{ "edn", .clojure },
+    .{ "fish", .shell },
+    .{ "h", .c_cpp_header },
+    .{ "hcl", .hcl },
+    .{ "hh", .c_cpp_header },
+    .{ "hpp", .c_cpp_header },
+    .{ "htm", .html },
+    .{ "html", .html },
+    .{ "hxx", .c_cpp_header },
+    .{ "j2", .jinja },
+    .{ "java", .java },
+    .{ "jinja", .jinja },
+    .{ "jinja2", .jinja },
+    .{ "js", .javascript },
+    .{ "json", .json },
+    .{ "jsx", .javascript },
+    .{ "kt", .kotlin },
+    .{ "kts", .kotlin },
+    .{ "l", .lex },
+    .{ "ll", .lex },
+    .{ "lua", .lua },
+    .{ "m", .objective_c },
+    .{ "markdown", .markdown },
+    .{ "md", .markdown },
+    .{ "mdown", .markdown },
+    .{ "mjs", .javascript },
+    .{ "mk", .makefile },
+    .{ "mkd", .markdown },
+    .{ "mm", .objective_c },
+    .{ "mts", .typescript },
+    .{ "perl", .perl },
+    .{ "php", .php },
+    .{ "pl", .perl },
+    .{ "pm", .perl },
+    .{ "pod", .perl },
+    .{ "psgi", .perl },
+    .{ "py", .python },
+    .{ "pyw", .python },
+    .{ "R", .r },
+    .{ "r", .r },
+    .{ "rake", .ruby },
+    .{ "rb", .ruby },
+    .{ "rs", .rust },
+    .{ "S", .assembly },
+    .{ "s", .assembly },
+    .{ "sass", .sass },
+    .{ "scss", .sass },
+    .{ "sed", .sed },
+    .{ "sh", .shell },
+    .{ "sql", .sql },
+    .{ "sty", .tex },
+    .{ "svg", .svg },
+    .{ "swift", .swift },
+    .{ "t", .perl },
+    .{ "tex", .tex },
+    .{ "text", .text },
+    .{ "tf", .hcl },
+    .{ "tfvars", .hcl },
+    .{ "toml", .toml },
+    .{ "ts", .typescript },
+    .{ "tsx", .typescript },
+    .{ "txt", .text },
+    .{ "vim", .vim_script },
+    .{ "vimrc", .vim_script },
+    .{ "xml", .xml },
+    .{ "y", .yacc },
+    .{ "yaml", .yaml },
+    .{ "yml", .yaml },
+    .{ "yy", .yacc },
+    .{ "zig", .zig },
+    .{ "zsh", .shell },
+});
+
 pub fn detect(path: []const u8) ?Language {
-    for (specs) |spec| {
-        if (hasAnyFilename(path, spec.filenames) or hasAnyExtension(path, spec.extensions)) {
-            return spec.language;
-        }
-    }
-
-    return null;
-}
-
-pub fn hasAnyFilename(path: []const u8, filenames: []const []const u8) bool {
     const basename = std.fs.path.basename(path);
 
-    for (filenames) |filename| {
-        if (std.mem.eql(u8, basename, filename)) {
-            return true;
-        }
+    if (filename_languages.get(basename)) |language| {
+        return language;
     }
 
-    return false;
-}
-
-pub fn hasAnyExtension(path: []const u8, extensions: []const []const u8) bool {
-    for (extensions) |extension| {
-        if (std.mem.endsWith(u8, path, extension)) {
-            return true;
-        }
-    }
-
-    return false;
+    return extension_languages.get(std.fs.path.extension(basename));
 }
 
 pub fn syntaxFor(language: Language) syntax.SyntaxSpec {
@@ -804,7 +888,7 @@ test "detect language from filename" {
     try std.testing.expectEqual(Language.yaml, detect("config.yaml").?);
     try std.testing.expectEqual(Language.zig, detect("src/root.zig").?);
 
-    try std.testing.expect(detect("README.txt") == null);
+    try std.testing.expect(detect("README.unknown") == null);
 }
 
 fn expectCounts(language: Language, text: []const u8, blank: u64, comment: u64, code: u64) !void {
