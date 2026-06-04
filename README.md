@@ -42,7 +42,7 @@ Total         2      4        6    12
 Print line-by-line classifications for debugging:
 
 ```sh
-zig build run -- --debug-lines path/to/file.go
+zig build run -- --debug path/to/file.go
 ```
 
 ## Development
@@ -70,10 +70,9 @@ The main implementation is split across:
 - [x] Accept multiple file paths.
 - [x] Aggregate totals by language.
 - [x] Print table output with a total row.
-- [ ] Walk directories recursively.
-- [ ] Ignore common generated and dependency directories.
-- [ ] Add more languages.
+- [x] Walk directories recursively.
 - [ ] Add `.gitignore` awareness.
+- [ ] Add more languages.
 
 ## License
 

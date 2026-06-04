@@ -2,6 +2,7 @@ const std = @import("std");
 const languages = @import("languages.zig");
 const lexer = @import("lexer.zig");
 const report = @import("report.zig");
+const walker = @import("walker.zig");
 
 pub const Language = languages.Language;
 pub const Counts = lexer.Counts;
@@ -18,43 +19,35 @@ pub fn countTextOptions(language: Language, text: []const u8, options: CountOpti
 
 pub fn run(io: std.Io, args: []const [:0]const u8) !void {
     if (args.len < 2) {
-        std.debug.print("usage: {s} [--debug-lines] <file>...\n", .{args[0]});
+        std.debug.print("usage: {s} [--debug] <file>...\n", .{args[0]});
         return;
     }
 
-    var debug_lines = false;
+    var debug = false;
     var path_index: usize = 1;
 
-    if (std.mem.eql(u8, args[1], "--debug-lines")) {
+    if (std.mem.eql(u8, args[1], "--debug")) {
         if (args.len < 3) {
-            std.debug.print("usage: {s} [--debug-lines] <file>...\n", .{args[0]});
+            std.debug.print("usage: {s} [--debug] <file>...\n", .{args[0]});
             return;
         }
 
-        debug_lines = true;
+        debug = true;
         path_index = 2;
     }
 
     var buffer: [64 * 1024]u8 = undefined;
     var summaries = report.initSummaries();
 
+    var context = walker.Context{
+        .io = io,
+        .debug = debug,
+        .summaries = &summaries,
+        .buffer = &buffer,
+    };
+
     for (args[path_index..]) |path| {
-        const language = languages.detect(path) orelse {
-            std.debug.print("unsupported file type: {s}\n", .{path});
-            continue;
-        };
-
-        const text = try std.Io.Dir.cwd().readFile(io, path, &buffer);
-
-        if (debug_lines) {
-            std.debug.print("{s}:\n", .{path});
-        }
-
-        const counts = countTextOptions(language, text, .{
-            .debug_lines = debug_lines,
-        });
-
-        report.addFile(&summaries, language, counts);
+        try walker.countPath(&context, path);
     }
 
     report.printSummaryTable(&summaries);

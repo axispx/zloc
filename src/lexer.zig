@@ -8,7 +8,7 @@ pub const Counts = struct {
 };
 
 pub const CountOptions = struct {
-    debug_lines: bool = false,
+    debug: bool = false,
 };
 
 pub const LineClassification = enum {
@@ -220,7 +220,7 @@ const Scanner = struct {
             .blank => self.counts.blank += 1,
         }
 
-        if (self.options.debug_lines) {
+        if (self.options.debug) {
             self.printLineTrace(classification);
         }
 
