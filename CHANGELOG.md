@@ -2,6 +2,13 @@
 
 All notable changes to `zloc` will be documented in this file.
 
+## 0.2.0 - 2026-08-10
+
+### Added
+
+- Support Gleam (`.gleam`).
+- Counting tests for Elixir, Erlang, and Gleam.
+
 ## 0.1.1 - 2026-06-04
 
 ### Added

@@ -21,6 +21,7 @@ pub const Language = enum {
     elixir,
     erlang,
     fsharp,
+    gleam,
     go,
     graphql,
     groovy,
@@ -92,6 +93,7 @@ pub const supported_languages = [_]Language{
     .elixir,
     .erlang,
     .fsharp,
+    .gleam,
     .go,
     .graphql,
     .groovy,
@@ -263,6 +265,13 @@ pub const fsharp_syntax = syntax.SyntaxSpec{
     .block_comments = &.{.{ .start = "(*", .end = "*)" }},
     .quoted = &.{
         .{ .start = "\"\"\"", .end = "\"\"\"", .multiline = true },
+        .{ .start = "\"", .end = "\"", .escape = '\\' },
+    },
+};
+
+pub const gleam_syntax = syntax.SyntaxSpec{
+    .line_comments = &.{.{ .marker = "//" }},
+    .quoted = &.{
         .{ .start = "\"", .end = "\"", .escape = '\\' },
     },
 };
@@ -666,6 +675,10 @@ pub const specs = [_]LanguageSpec{
         .syntax = fsharp_syntax,
     },
     .{
+        .language = .gleam,
+        .syntax = gleam_syntax,
+    },
+    .{
         .language = .go,
         .syntax = go_syntax,
     },
@@ -895,6 +908,7 @@ const extension_languages = std.StaticStringMap(Language).initComptime(.{
     .{ ".fs", .fsharp },
     .{ ".fsi", .fsharp },
     .{ ".fsx", .fsharp },
+    .{ ".gleam", .gleam },
     .{ ".go", .go },
     .{ ".gql", .graphql },
     .{ ".gradle", .groovy },
@@ -1031,6 +1045,7 @@ pub fn name(language: Language) []const u8 {
         .elixir => "Elixir",
         .erlang => "Erlang",
         .fsharp => "F#",
+        .gleam => "Gleam",
         .go => "Go",
         .graphql => "GraphQL",
         .groovy => "Groovy",
@@ -1109,6 +1124,7 @@ test "detect language from filename" {
     try std.testing.expectEqual(Language.fsharp, detect("src/App.fs").?);
     try std.testing.expectEqual(Language.fsharp, detect("src/App.fsi").?);
     try std.testing.expectEqual(Language.fsharp, detect("src/App.fsx").?);
+    try std.testing.expectEqual(Language.gleam, detect("src/app.gleam").?);
     try std.testing.expectEqual(Language.go, detect("main.go").?);
     try std.testing.expectEqual(Language.graphql, detect("schema.graphql").?);
     try std.testing.expectEqual(Language.graphql, detect("schema.gql").?);
@@ -1227,6 +1243,13 @@ test "new language syntax rules" {
         \\// comment
         \\printfn "%s" url
     , 0, 1, 2);
+
+    try expectCounts(.gleam,
+        \\pub fn main() {
+        \\// comment
+        \\  io.println("done")
+        \\}
+    , 0, 1, 3);
 
     try expectCounts(.graphql,
         \\type Query {
@@ -1508,6 +1531,54 @@ test "Dockerfile code" {
     ;
 
     try expectCounts(.dockerfile, text, 1, 1, 2);
+}
+
+test "Elixir code" {
+    const text =
+        \\defmodule App do
+        \\
+        \\  # line comment
+        \\  @doc """
+        \\  multiline string
+        \\  # not a comment
+        \\  """
+        \\  def main do
+        \\    url = "https://example.com" # trailing comment
+        \\    IO.puts(url)
+        \\  end
+        \\end
+    ;
+
+    try expectCounts(.elixir, text, 1, 1, 10);
+}
+
+test "Erlang code" {
+    const text =
+        \\-module(app).
+        \\
+        \\% line comment
+        \\main() ->
+        \\    Url = "https://example.com", % trailing comment
+        \\    %% still a comment
+        \\    io:format("~s~n", [Url]).
+    ;
+
+    try expectCounts(.erlang, text, 1, 2, 4);
+}
+
+test "Gleam code" {
+    const text =
+        \\import gleam/io
+        \\
+        \\// line comment
+        \\/// doc comment
+        \\pub fn main() {
+        \\  let url = "https://example.com" // trailing comment
+        \\  io.println(url)
+        \\}
+    ;
+
+    try expectCounts(.gleam, text, 1, 2, 5);
 }
 
 test "Go code" {
