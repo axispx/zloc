@@ -6,7 +6,7 @@
 
 `zloc` counts one or more file or directory paths recursively. It detects the language from each file extension, runs a lightweight lexer for that language, and prints line counts.
 
-For directory inputs inside a Git repository, `zloc` uses `git ls-files` so files are automatically filtered using `.gitignore`. Non-Git directories fall back to recursive filesystem traversal.
+For directory inputs inside a Git repository, `zloc` uses `git ls-files` for tracked and untracked files, filtered by `.gitignore`. Non-Git directories fall back to recursive filesystem traversal.
 
 ## Supported Languages
 

@@ -2,6 +2,12 @@
 
 All notable changes to `zloc` will be documented in this file.
 
+## 0.2.1 - 2026-08-10
+
+### Fixed
+
+- Count untracked files in Git repositories (including repos with no commits yet).
+
 ## 0.2.0 - 2026-08-10
 
 ### Added

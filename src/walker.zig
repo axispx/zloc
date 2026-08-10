@@ -92,8 +92,10 @@ fn countDirectory(context: *Context, path: []const u8) !void {
 }
 
 fn countGitDirectory(context: *Context, path: []const u8) !GitListResult {
+    // Include tracked and untracked files, but still honor .gitignore.
+    // Repos with no commits yet only have untracked files.
     const result = std.process.run(context.allocator, context.io, .{
-        .argv = &.{ "git", "-C", path, "ls-files", "-z" },
+        .argv = &.{ "git", "-C", path, "ls-files", "-z", "--cached", "--others", "--exclude-standard" },
         .stdout_limit = .limited(32 * 1024 * 1024),
         .stderr_limit = .limited(1024 * 1024),
     }) catch |err| switch (err) {
